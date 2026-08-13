@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AuraSign - Real-Time Sign Language Recognizer</title>
+  <meta name="description" content="AuraSign uses state-of-the-art computer vision to recognize hand gestures and sign language in real-time, translating them into text and speech directly in your browser.">
+  
+  <!-- Modern Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Project Stylesheet -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="app-container">
+    
+    <!-- Header -->
+    <header class="app-header">
+      <div class="header-logo">
+        <div class="logo-icon">
+          <i class="fa-solid fa-hand-sparkles"></i>
+        </div>
+        <div class="logo-text">
+          <h1>AuraSign</h1>
+          <span>AI Sign Language Recognizer</span>
+        </div>
+      </div>
+      
+      <div class="header-controls">
+        <div id="status-badge" class="status-badge status-loading">
+          <span class="status-dot"></span>
+          <span class="status-text">Initializing AI Model...</span>
+        </div>
+        
+        <button id="theme-toggle" class="control-btn" title="Toggle Theme" aria-label="Toggle Theme">
+          <i class="fa-solid fa-moon"></i>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Workspace Grid -->
+    <main class="workspace-grid">
+      
+      <!-- Video Input Column -->
+      <section class="card glass-card camera-card">
+        <div class="card-header">
+          <h2><i class="fa-solid fa-video"></i> Live Camera Feed</h2>
+          <div class="card-actions">
+            <button id="camera-btn" class="action-btn secondary-btn" disabled>
+              <i class="fa-solid fa-camera-rotate"></i> Start Webcam
+            </button>
+          </div>
+        </div>
+        
+        <div class="video-container">
+          <video id="webcam" autoplay playsinline muted></video>
+          <canvas id="output-canvas"></canvas>
+          
+          <!-- Splash screens for various states -->
+          <div id="camera-placeholder" class="video-overlay-splash active">
+            <div class="splash-content">
+              <div class="spinner"></div>
+              <p class="splash-title">Loading Neural Network</p>
+              <p class="splash-subtitle">Setting up MediaPipe HandLandmarker...</p>
+            </div>
+          </div>
+
+          <div id="camera-error" class="video-overlay-splash">
+            <div class="splash-content text-danger">
+              <i class="fa-solid fa-circle-exclamation splash-icon"></i>
+              <p class="splash-title">Webcam Access Required</p>
+              <p class="splash-subtitle">Please allow camera permissions and click "Start Webcam" to begin tracking.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="camera-info">
+          <p><i class="fa-solid fa-circle-info"></i> Position your hand inside the frame. Ensure good lighting for higher accuracy.</p>
+        </div>
+      </section>
+
+      <!-- Recognition Panel Column -->
+      <section class="card glass-card recognition-card">
+        <div class="card-header">
+          <h2><i class="fa-solid fa-brain"></i> Recognition Console</h2>
+        </div>
+
+        <div class="recognition-workspace">
+          <!-- Active Gesture Translated -->
+          <div class="active-gesture-container">
+            <span class="label">Current Sign Detected</span>
+            <div class="gesture-display">
+              <div id="detected-gesture" class="gesture-text">Waiting...</div>
+              <div id="detected-icon" class="gesture-visual-icon"><i class="fa-solid fa-hands"></i></div>
+            </div>
+            
+            <div class="stability-container">
+              <div class="stability-bar-wrapper">
+                <div id="stability-fill" class="stability-bar-fill"></div>
+              </div>
+              <div class="stability-label">
+                <span>Sign Stability Tracker</span>
+                <span id="stability-percent">0%</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sentence / Word Builder Console -->
+          <div class="sentence-builder-container">
+            <span class="label">Sentence Builder <span class="tip">(Hold sign for 1.2s to type)</span></span>
+            <div id="sentence-output" class="sentence-console" placeholder="Recognized letters and words will appear here..."></div>
+            
+            <div class="builder-controls">
+              <button id="btn-space" class="control-btn accent-btn" title="Add Space">
+                <i class="fa-solid fa-square-minus"></i> Space
+              </button>
+              <button id="btn-backspace" class="control-btn danger-btn" title="Backspace">
+                <i class="fa-solid fa-delete-left"></i> Back
+              </button>
+              <button id="btn-clear" class="control-btn" title="Clear Text">
+                <i class="fa-solid fa-trash-can"></i> Clear
+              </button>
+              <button id="btn-speak" class="control-btn success-btn" title="Speak Out Loud">
+                <i class="fa-solid fa-volume-high"></i> Speak
+              </button>
+              <button id="btn-copy" class="control-btn" title="Copy to Clipboard">
+                <i class="fa-solid fa-copy"></i> Copy
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Sign Dictionary & Instructions Grid -->
+    <section class="card glass-card dictionary-section">
+      <div class="card-header">
+        <h2><i class="fa-solid fa-book-open"></i> Interactive Sign Dictionary</h2>
+        <div class="dictionary-search">
+          <input type="text" id="dict-search" placeholder="Search signs..." aria-label="Search signs">
+          <i class="fa-solid fa-magnifying-glass"></i>
+        </div>
+      </div>
+      
+      <div class="dictionary-grid" id="dictionary-grid">
+        <!-- Dictionary cards will be injected here dynamically by JavaScript -->
+      </div>
+    </section>
+
+    <!-- Developer & Analytics Debug Console -->
+    <section class="card glass-card debug-section">
+      <details>
+        <summary class="debug-summary">
+          <h2><i class="fa-solid fa-bug"></i> Real-time Landmark Diagnostics</h2>
+          <span class="details-chevron"><i class="fa-solid fa-chevron-down"></i></span>
+        </summary>
+        <div class="debug-content-grid">
+          
+          <div class="debug-finger-states">
+            <h3>Finger Extension States</h3>
+            <div class="finger-grid">
+              <div class="finger-status-item" id="state-thumb">
+                <span class="finger-name">Thumb</span>
+                <span class="finger-value state-curled">Curled</span>
+              </div>
+              <div class="finger-status-item" id="state-index">
+                <span class="finger-name">Index Finger</span>
+                <span class="finger-value state-curled">Curled</span>
+              </div>
+              <div class="finger-status-item" id="state-middle">
+                <span class="finger-name">Middle Finger</span>
+                <span class="finger-value state-curled">Curled</span>
+              </div>
+              <div class="finger-status-item" id="state-ring">
+                <span class="finger-name">Ring Finger</span>
+                <span class="finger-value state-curled">Curled</span>
+              </div>
+              <div class="finger-status-item" id="state-pinky">
+                <span class="finger-name">Pinky Finger</span>
+                <span class="finger-value state-curled">Curled</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="debug-metrics">
+            <h3>Custom Rules Diagnostics</h3>
+            <div class="metrics-grid">
+              <div class="metric-item">
+                <span class="metric-name">Hand Coordinates</span>
+                <span class="metric-value" id="debug-coords">N/A</span>
+              </div>
+              <div class="metric-item">
+                <span class="metric-name">Fingers Binary Pattern</span>
+                <span class="metric-value" id="debug-pattern">[0, 0, 0, 0, 0]</span>
+              </div>
+              <div class="metric-item">
+                <span class="metric-name">Pinched index-thumb</span>
+                <span class="metric-value" id="debug-pinch">N/A</span>
+              </div>
+              <div class="metric-item">
+                <span class="metric-name">Frames Tracked</span>
+                <span class="metric-value" id="debug-fps">0</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </details>
+    </section>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <p>AuraSign AI Platform &copy; 2026. Made with Google MediaPipe Tasks Vision API.</p>
+    </footer>
+
+  </div>
+
+  <!-- Main JavaScript App module -->
+  <script type="module" src="app.js"></script>
+</body>
+</html>

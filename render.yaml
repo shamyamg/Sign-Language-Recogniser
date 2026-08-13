@@ -1,0 +1,11 @@
+services:
+  # Option 1: Fullstack Node.js Express Web Service (supports /api/health and frontend)
+  - type: web
+    name: sign-language-recogniser
+    runtime: node
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_VERSION
+        value: 20.10.0
