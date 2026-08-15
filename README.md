@@ -1,4 +1,5 @@
-lick here to visit website: https://sign-language-recogniser.onrender.com#
+🔗 Vercel Live App:
+https://sign-language-recogniser.vercel.app
 🖐️ AuraSign - Real-Time AI Sign Language Recognizer
 
 [![Vercel Deployment](https://img.shields.io/badge/Deploy-Vercel-black?style=flat&logo=vercel)](https://vercel.com/new/clone?repository-url=https://github.com/shamyamg/Sign-Language-Recogniser)
