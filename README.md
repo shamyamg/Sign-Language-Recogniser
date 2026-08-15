@@ -1,4 +1,6 @@
 # Sign Language Recognizer
+🔗 Live link:
+https://sign-language-recogniser.vercel.app
 
 A real-time hand gesture and sign language recognition application that translates signs into text and speech directly in the browser.
 
